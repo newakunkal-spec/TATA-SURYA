@@ -1,0 +1,363 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>QR Code Generator - Planet Dalam Tata Surya</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@700;900&family=Exo+2:wght@300;400;600&display=swap" rel="stylesheet">
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    background: #03060f;
+    color: #e8eaf0;
+    font-family: 'Exo 2', sans-serif;
+    min-height: 100vh;
+    padding: 2rem;
+  }
+
+  h1 {
+    font-family: 'Orbitron', sans-serif;
+    font-size: 1.4rem;
+    font-weight: 900;
+    color: #ffd700;
+    text-align: center;
+    margin-bottom: 0.5rem;
+    letter-spacing: 0.1em;
+  }
+
+  .subtitle {
+    text-align: center;
+    color: #8892a4;
+    font-size: 0.85rem;
+    font-weight: 300;
+    margin-bottom: 2rem;
+  }
+
+  .url-input-area {
+    max-width: 600px;
+    margin: 0 auto 2.5rem;
+    background: rgba(255,255,255,0.04);
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 12px;
+    padding: 1.5rem;
+  }
+
+  .url-input-area label {
+    display: block;
+    font-family: 'Orbitron', sans-serif;
+    font-size: 0.6rem;
+    letter-spacing: 0.2em;
+    color: #8892a4;
+    margin-bottom: 0.6rem;
+    text-transform: uppercase;
+  }
+
+  .url-row {
+    display: flex;
+    gap: 0.5rem;
+  }
+
+  .url-input-area input {
+    flex: 1;
+    background: rgba(255,255,255,0.06);
+    border: 1px solid rgba(255,255,255,0.12);
+    border-radius: 6px;
+    color: #e8eaf0;
+    font-family: 'Exo 2', sans-serif;
+    font-size: 0.85rem;
+    padding: 0.65rem 0.9rem;
+    outline: none;
+    transition: border-color 0.3s;
+  }
+
+  .url-input-area input:focus { border-color: #ffd700; }
+
+  .url-input-area button {
+    background: #ffd700;
+    color: #03060f;
+    border: none;
+    border-radius: 6px;
+    font-family: 'Orbitron', sans-serif;
+    font-size: 0.6rem;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    padding: 0 1.2rem;
+    cursor: pointer;
+    transition: opacity 0.2s;
+    text-transform: uppercase;
+  }
+
+  .url-input-area button:hover { opacity: 0.85; }
+
+  .hint {
+    font-size: 0.75rem;
+    color: #6a7488;
+    margin-top: 0.6rem;
+    font-weight: 300;
+  }
+
+  .hint code {
+    color: #ffd700;
+    background: rgba(255,215,0,0.08);
+    padding: 0.1rem 0.4rem;
+    border-radius: 3px;
+    font-size: 0.72rem;
+  }
+
+  .qr-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    gap: 1.5rem;
+    max-width: 900px;
+    margin: 0 auto;
+  }
+
+  .qr-card {
+    background: rgba(255,255,255,0.03);
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 14px;
+    padding: 1.8rem;
+    text-align: center;
+    transition: transform 0.3s, box-shadow 0.3s;
+  }
+
+  .qr-card:hover {
+    transform: translateY(-4px);
+  }
+
+  .qr-card.mercury { border-color: rgba(181,181,181,0.3); }
+  .qr-card.venus   { border-color: rgba(232,201,122,0.3); }
+  .qr-card.earth   { border-color: rgba(79,195,247,0.3); }
+  .qr-card.mars    { border-color: rgba(239,108,66,0.3); }
+
+  .qr-card.mercury:hover { box-shadow: 0 8px 30px rgba(181,181,181,0.15); }
+  .qr-card.venus:hover   { box-shadow: 0 8px 30px rgba(232,201,122,0.15); }
+  .qr-card.earth:hover   { box-shadow: 0 8px 30px rgba(79,195,247,0.15); }
+  .qr-card.mars:hover    { box-shadow: 0 8px 30px rgba(239,108,66,0.15); }
+
+  .planet-label {
+    font-family: 'Orbitron', sans-serif;
+    font-size: 0.9rem;
+    font-weight: 900;
+    margin-bottom: 0.3rem;
+    letter-spacing: 0.08em;
+  }
+
+  .mercury .planet-label { color: #b5b5b5; }
+  .venus   .planet-label { color: #e8c97a; }
+  .earth   .planet-label { color: #4fc3f7; }
+  .mars    .planet-label { color: #ef6c42; }
+
+  .planet-sublabel {
+    font-size: 0.7rem;
+    color: #8892a4;
+    font-weight: 300;
+    margin-bottom: 1.2rem;
+  }
+
+  .qr-box {
+    background: white;
+    border-radius: 10px;
+    padding: 12px;
+    display: inline-block;
+    margin-bottom: 1.2rem;
+  }
+
+  .qr-box canvas, .qr-box img { display: block; }
+
+  .download-btn {
+    display: block;
+    background: none;
+    border: 1px solid rgba(255,255,255,0.15);
+    color: #8892a4;
+    font-family: 'Orbitron', sans-serif;
+    font-size: 0.55rem;
+    letter-spacing: 0.12em;
+    padding: 0.55rem;
+    border-radius: 6px;
+    cursor: pointer;
+    width: 100%;
+    transition: all 0.3s;
+    text-transform: uppercase;
+    margin-top: 0.4rem;
+  }
+
+  .download-btn:hover {
+    color: #fff;
+    border-color: rgba(255,255,255,0.3);
+    background: rgba(255,255,255,0.05);
+  }
+
+  .instructions {
+    max-width: 900px;
+    margin: 3rem auto 0;
+    background: rgba(255,215,0,0.05);
+    border: 1px solid rgba(255,215,0,0.15);
+    border-radius: 12px;
+    padding: 1.5rem;
+  }
+
+  .instructions h3 {
+    font-family: 'Orbitron', sans-serif;
+    font-size: 0.7rem;
+    letter-spacing: 0.2em;
+    color: #ffd700;
+    margin-bottom: 1rem;
+    text-transform: uppercase;
+  }
+
+  .instructions ol {
+    padding-left: 1.2rem;
+  }
+
+  .instructions li {
+    font-size: 0.88rem;
+    font-weight: 300;
+    line-height: 1.8;
+    color: #c8d0e0;
+    margin-bottom: 0.4rem;
+  }
+
+  .instructions code {
+    color: #ffd700;
+    background: rgba(255,215,0,0.08);
+    padding: 0.1rem 0.4rem;
+    border-radius: 3px;
+    font-size: 0.8rem;
+  }
+
+  @media print {
+    body { background: white; color: black; padding: 1rem; }
+    .url-input-area, .instructions { display: none; }
+    .qr-card { border: 1px solid #ccc; break-inside: avoid; }
+    .planet-label, .planet-sublabel { color: black !important; }
+    .qr-grid { gap: 1rem; }
+    h1, .subtitle { color: black; }
+  }
+</style>
+</head>
+<body>
+
+<h1>⬡ QR CODE GENERATOR</h1>
+<p class="subtitle">Planet Dalam Tata Surya · Tugas Sekolah</p>
+
+<div class="url-input-area">
+  <label>Masukkan URL website kamu yang sudah di-hosting</label>
+  <div class="url-row">
+    <input type="text" id="baseUrl" placeholder="contoh: https://username.github.io/tata-surya" value="">
+    <button onclick="generateAll()">Generate</button>
+  </div>
+  <p class="hint">
+    Setelah website diupload, masukkan URL-nya lalu klik Generate. Format URL per planet:<br>
+    <code>https://url-kamu/#mercury</code> &nbsp;
+    <code>https://url-kamu/#venus</code> &nbsp;
+    <code>https://url-kamu/#earth</code> &nbsp;
+    <code>https://url-kamu/#mars</code>
+  </p>
+</div>
+
+<div class="qr-grid">
+  <div class="qr-card mercury">
+    <div class="planet-label">Merkurius</div>
+    <div class="planet-sublabel">Planet Pertama · Terkecil</div>
+    <div class="qr-box"><div id="qr-mercury"></div></div>
+    <button class="download-btn" onclick="downloadQR('mercury', 'Merkurius')">⬇ Unduh QR Code</button>
+  </div>
+
+  <div class="qr-card venus">
+    <div class="planet-label">Venus</div>
+    <div class="planet-sublabel">Planet Kedua · Terpanas</div>
+    <div class="qr-box"><div id="qr-venus"></div></div>
+    <button class="download-btn" onclick="downloadQR('venus', 'Venus')">⬇ Unduh QR Code</button>
+  </div>
+
+  <div class="qr-card earth">
+    <div class="planet-label">Bumi</div>
+    <div class="planet-sublabel">Planet Ketiga · Berpenghuni</div>
+    <div class="qr-box"><div id="qr-earth"></div></div>
+    <button class="download-btn" onclick="downloadQR('earth', 'Bumi')">⬇ Unduh QR Code</button>
+  </div>
+
+  <div class="qr-card mars">
+    <div class="planet-label">Mars</div>
+    <div class="planet-sublabel">Planet Keempat · Planet Merah</div>
+    <div class="qr-box"><div id="qr-mars"></div></div>
+    <button class="download-btn" onclick="downloadQR('mars', 'Mars')">⬇ Unduh QR Code</button>
+  </div>
+</div>
+
+<div class="instructions">
+  <h3>📋 Cara Menggunakan</h3>
+  <ol>
+    <li>Upload file <code>index.html</code> ke hosting gratis seperti <strong>GitHub Pages</strong> atau <strong>Netlify</strong></li>
+    <li>Setelah dapat URL website, masukkan di kolom atas lalu klik <strong>Generate</strong></li>
+    <li>Klik <strong>"Unduh QR Code"</strong> untuk mengunduh QR code masing-masing planet</li>
+    <li>Tempelkan QR code di lembar kerja / makalah sesuai planet yang dibahas</li>
+    <li>Ketika di-scan, QR code akan langsung membuka halaman planet tersebut di website</li>
+    <li>Cara upload ke GitHub Pages: buat akun → buat repository baru → upload <code>index.html</code> → aktifkan GitHub Pages di Settings</li>
+  </ol>
+</div>
+
+<script>
+const planets = [
+  { id: 'mercury', hash: '#mercury', label: 'Merkurius' },
+  { id: 'venus',   hash: '#venus',   label: 'Venus' },
+  { id: 'earth',   hash: '#earth',   label: 'Bumi' },
+  { id: 'mars',    hash: '#mars',    label: 'Mars' },
+];
+
+let qrInstances = {};
+
+function generateAll() {
+  let base = document.getElementById('baseUrl').value.trim();
+  if (!base) {
+    alert('Masukkan URL website kamu terlebih dahulu!');
+    return;
+  }
+  if (base.endsWith('/')) base = base.slice(0, -1);
+
+  planets.forEach(p => {
+    const el = document.getElementById('qr-' + p.id);
+    el.innerHTML = '';
+    const url = base + p.hash;
+    const qr = new QRCode(el, {
+      text: url,
+      width: 160,
+      height: 160,
+      colorDark: '#000000',
+      colorLight: '#ffffff',
+      correctLevel: QRCode.CorrectLevel.H
+    });
+    qrInstances[p.id] = { el, url };
+  });
+}
+
+function downloadQR(planetId, label) {
+  const container = document.getElementById('qr-' + planetId);
+  const canvas = container.querySelector('canvas');
+  const img = container.querySelector('img');
+
+  if (canvas) {
+    const link = document.createElement('a');
+    link.download = 'qr-' + label.toLowerCase() + '.png';
+    link.href = canvas.toDataURL('image/png');
+    link.click();
+  } else if (img) {
+    const link = document.createElement('a');
+    link.download = 'qr-' + label.toLowerCase() + '.png';
+    link.href = img.src;
+    link.click();
+  } else {
+    alert('Generate QR code terlebih dahulu!');
+  }
+}
+
+// Auto-generate with placeholder if URL is pre-filled
+window.onload = () => {
+  const url = document.getElementById('baseUrl').value;
+  if (url) generateAll();
+};
+</script>
+</body>
+</html>
